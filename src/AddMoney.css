@@ -1,0 +1,28 @@
+
+.form-label{
+  text-align: center;
+}
+.form-input{
+  width: 161px;
+}
+
+.application{
+  width: 350px;
+  margin: auto;
+}
+
+.footer{
+  height: 70px;
+}
+.header{
+  padding-top: 30px;
+  height: 120px;
+}
+.content{
+  margin-top:140px;
+  margin-bottom:140px;
+}
+.money-pool{
+  width: 180px;
+  text-align: center;
+}

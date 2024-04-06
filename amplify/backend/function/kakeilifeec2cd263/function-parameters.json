@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "api": {
+      "kakeilife": [
+        "Query",
+        "Mutation",
+        "Subscription"
+      ]
+    },
+    "auth": {
+      "kakeilife8cdb1022": [
+        "create",
+        "read"
+      ]
+    }
+  },
+  "lambdaLayers": [],
+  "environmentVariableList": [
+    {
+      "cloudFormationParameterName": "apiEndpoint",
+      "environmentVariableName": "API_ENDPOINT"
+    }
+  ],
+  "secretNames": [
+    "kakeiLifeSkey"
+  ]
+}

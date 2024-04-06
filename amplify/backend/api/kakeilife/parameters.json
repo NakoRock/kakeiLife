@@ -1,0 +1,11 @@
+{
+  "AppSyncApiName": "kakeilife",
+  "DynamoDBBillingMode": "PAY_PER_REQUEST",
+  "DynamoDBEnableServerSideEncryption": false,
+  "AuthCognitoUserPoolId": {
+    "Fn::GetAtt": [
+      "authkakeilife8cdb1022",
+      "Outputs.UserPoolId"
+    ]
+  }
+}
