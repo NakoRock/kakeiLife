@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { fetchAuthSession } from 'aws-amplify/auth'
 import { getUser } from './graphql/queries'
 import './Application.css'
@@ -12,10 +12,12 @@ import { getCurrentUser } from 'aws-amplify/auth'
 import { generateClient } from 'aws-amplify/api'
 
 const Application: React.FC = () => {
+  const navigate = useNavigate()
   const client = generateClient({
     authMode: 'userPool',
   })
-  const [uid, setUid] = useAtom(atoms.uidAtom)
+  const [user, setUser] = useAtom(atoms.userAtom)
+  const [uid, setUid] = useState('')
 
   const getSession = async () => {
     try {
@@ -49,11 +51,13 @@ const Application: React.FC = () => {
   if (uid) {
     // graphqlのクエリを実行する(getUser)
     fetchUser()
+    if (user.sdate === '') {
+      navigate('/welcome')
+    }
   }
 
   return (
     <div>
-      {' '}
       <button
         className="btn btn-success px-5 mr-4"
         onClick={() => {
