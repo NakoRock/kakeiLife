@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { fetchAuthSession, signOut } from 'aws-amplify/auth'
+import { fetchAuthSession } from 'aws-amplify/auth'
 import './Application.css'
 import { useAtom } from 'jotai'
 import { userAtom } from './jotai/Atoms'
