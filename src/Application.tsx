@@ -1,71 +1,64 @@
-import React, { useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
-import { fetchAuthSession } from 'aws-amplify/auth'
-import { getUser } from './graphql/queries'
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { fetchAuthSession, signOut } from 'aws-amplify/auth'
 import './Application.css'
 import { useAtom } from 'jotai'
-import { atoms } from './jotai/Atoms'
-import * as queris from './graphql/queries'
-import { signOut } from 'aws-amplify/auth'
-import { getCurrentUser } from 'aws-amplify/auth'
-
+import { userAtom } from './jotai/Atoms'
+import * as queries from './graphql/queries'
 import { generateClient } from 'aws-amplify/api'
 
 const Application: React.FC = () => {
   const navigate = useNavigate()
-  const client = generateClient({
-    authMode: 'userPool',
-  })
-  const [user, setUser] = useAtom(atoms.userAtom)
+  const client = generateClient({ authMode: 'userPool' })
+  const [user, setUser] = useAtom(userAtom)
   const [uid, setUid] = useState('')
 
-  const getSession = async () => {
-    try {
-      const { accessToken } = (await fetchAuthSession()).tokens ?? {}
-      const { username, userId, signInDetails } = await getCurrentUser()
-      console.dir({ accessToken, username, userId, signInDetails })
-      const uid = accessToken?.payload?.sub
-      if (!uid) throw new Error('ユーザーは認証されていません')
-      setUid(uid)
-    } catch (err) {
-      console.log('ユーザーは認証されていません')
+  useEffect(() => {
+    const initialize = async () => {
+      try {
+        const { accessToken } = (await fetchAuthSession()).tokens ?? {}
+        const uid = accessToken?.payload?.sub
+        if (!uid) throw new Error('ユーザーは認証されていません')
+        setUid(uid)
+        const userData = await client.graphql({
+          query: queries.getUser,
+          variables: { id: uid },
+        })
+        setUser({
+          currentmoney: userData?.data?.getUser?.currentmoney || 0,
+          edate: userData?.data?.getUser?.edate || 0,
+          email: userData?.data?.getUser?.email || '',
+          id: userData?.data?.getUser?.id || '',
+          savemoney: userData?.data?.getUser?.savemoney || 0,
+          sdate: userData?.data?.getUser?.sdate || 0,
+          username: userData?.data?.getUser?.username || '',
+        })
+      } catch (err) {
+        console.log(err)
+        // ここでエラーメッセージをUIに表示するための状態更新を行うか、またはエラー画面にリダイレクトする
+      }
     }
-  }
-  const trySignOut = async () => {
-    await signOut()
-  }
-  const fetchUser = async () => {
-    try {
-      const userData = await client.graphql({
-        query: queris.getUser,
-        variables: { id: uid },
-      })
-      console.dir(userData)
-    } catch (err) {
-      console.log('error fetching user', err)
-    }
-  }
+    initialize()
+  }, []) // 必要に応じて依存配列を調整
 
-  getSession()
-
-  if (uid) {
-    // graphqlのクエリを実行する(getUser)
-    fetchUser()
-    if (user.sdate === '') {
-      navigate('/welcome')
+  useEffect(() => {
+    if (uid) {
+      if (user.sdate === 0) {
+        navigate('/welcome')
+      } else {
+        navigate('/addmoney')
+      }
     }
-  }
+  }, [user])
 
   return (
     <div>
-      <button
-        className="btn btn-success px-5 mr-4"
-        onClick={() => {
-          trySignOut()
-        }}
-      >
-        確定
-      </button>
+      {/* ロード中 */}
+      <div className="d-flex justify-content-center">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
     </div>
   )
 }

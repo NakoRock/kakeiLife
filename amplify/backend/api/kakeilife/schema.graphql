@@ -7,44 +7,44 @@ type User @model @auth(rules: [
   { allow: private, provider: iam, operations: [create] }
 ])  {
   id: ID!
-  username: String!
-  email: String!
-  sdate: String!
-  edate: String!
-  currentmoney: Int!
-  savemoney: Int!
+  username: String
+  email: String
+  sdate: Int
+  edate: Int
+  currentmoney: Int
+  savemoney: Int
 }
 
 type UserMoney @model @auth(rules: [
   { allow: owner, ownerField: "id" }
 ]) {
   id: ID!
-  currentmoney: Int!
-  savemoney: Int!
+  currentmoney: Int
+  savemoney: Int
 }
 
 type MonthExpenses @model @auth(rules: [
   { allow: owner, ownerField: "id" }
 ]) {
   id: ID!
-  meid: String!
-  month: String!
-  totalamount: Int!
+  meid: String
+  month: String
+  totalamount: Int
 }
 
 type DateExpenses @model @auth(rules: [
   { allow: owner, ownerField: "id" }
 ]) {
   id: ID!
-  deid: String!
-  date: String!
-  totalamount: Int!
-  used: [UsedItem]!
+  deid: String
+  date: String
+  totalamount: Int
+  used: [UsedItem]
 }
 
 type UsedItem {
   id: ID!
-  iid: String!
-  amount: Int!
-  label: String!
+  iid: String
+  amount: Int
+  label: String
 }

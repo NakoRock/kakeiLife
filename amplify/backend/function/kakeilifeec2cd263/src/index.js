@@ -63,8 +63,8 @@ exports.handler = async (event) => {
           id,
           username: 'exampleUser',
           email,
-          sdate: '',
-          edate: '',
+          sdate: 0,
+          edate: 0,
           currentmoney: 0,
           savemoney: 0,
         },
@@ -74,7 +74,6 @@ exports.handler = async (event) => {
     console.log(JSON.stringify(result))
     return event
   } catch (err) {
-    console.log(JSON.stringify(err))
     return err
   }
 }

@@ -1,17 +1,11 @@
 import { atom } from 'jotai'
 
-const userAtom = atom({
-  createdAt: '',
+export const userAtom = atom({
   currentmoney: 0,
-  edate: '',
+  edate: 0,
   email: '',
   id: '',
   savemoney: 0,
-  sdate: '',
-  updatedAt: '',
+  sdate: 0,
   username: '',
 })
-
-export const atoms = {
-  userAtom,
-}

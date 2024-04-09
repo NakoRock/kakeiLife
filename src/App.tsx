@@ -11,6 +11,7 @@ import { withAuthenticator } from '@aws-amplify/ui-react'
 import 'primereact/resources/themes/lara-light-cyan/theme.css'
 import Application from './Application'
 import Welcome from './Welcome'
+import AddMoney from './AddMoney'
 import './App.css'
 Amplify.configure(config)
 
@@ -19,6 +20,7 @@ const App = () => {
     <Router>
       <Routes>
         <Route path="/" element={<Application />} />
+        <Route path="/addmoney" element={<AddMoney />} />
         <Route path="/welcome" element={<Welcome />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
