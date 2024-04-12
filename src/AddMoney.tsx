@@ -1,58 +1,87 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { useAtom } from 'jotai'
+import { userAtom } from './jotai/Atoms'
 import { signOut } from 'aws-amplify/auth'
 import './AddMoney.css'
+import * as queries from './graphql/queries'
+import * as mutations from './graphql/mutations'
+
+import { generateClient } from 'aws-amplify/api'
 
 const AddMoney: React.FC = () => {
-  const navigate = useNavigate()
-
-  const trySignOut = async () => {
-    await signOut()
+  const signOuter = async () => {
+    signOut()
   }
-
+  const [user] = useAtom(userAtom)
   // 金額とラベルの状態を管理する object型配列のexpencseを定義
-  const [expenses, setExpenses] = useState<{ amount: number; label: string }[]>(
-    []
-  )
+  const [expenses, setExpenses] = useState<
+    {
+      amount: number
+      label: string
+      isincome: boolean
+      iid: string
+    }[]
+  >([])
   // 所持金
-  const [money, setMoney] = useState(110000)
+  const [money, setMoney] = useState(0)
+  const [total, setTotal] = useState(0)
+  const [resetDateRemaining, setResetDateRemaining] = useState(0)
+  const [totals, setTotals] = useState({ spending: 0, income: 0 })
 
-  // expenseのamountの合計を常に計算する
-  const total = expenses.reduce((acc, cur) => acc + cur.amount, 0)
-
-  // 次の15日までの日数を計算する
-  const today = new Date()
-  // 今日が今月の15日より前の場合
-  const daysRemained =
-    today.getDate() <= 15 ? (
-      <h4 className="d-flex justify-content-center mb-3">
-        リセットまであと{15 - today.getDate()}日
-      </h4>
-    ) : (
-      // 今日が今月の15日より後の場合
-      <h4 className="d-flex justify-content-center mb-3">
-        リセットまであと{45 - today.getDate()}日
-      </h4>
-    )
-  // リセットまでの日付
-  const resetDate = new Date(today)
-  resetDate.setDate(15)
-  // 今日からリセットまでの日数
-  const days = Math.ceil((resetDate.getTime() - today.getTime()) / 86400000)
-
-  // money / days
-  const daily = money / days
-
-  // expensesの初期値を１つ追加
-  if (expenses.length === 0) {
-    setExpenses([{ amount: 0, label: '' }])
+  /**
+   * 今日の収支を取得する
+   */
+  const getTodayExpenses = async () => {
+    const today = new Date().toISOString().slice(0, 10)
+    const client = generateClient({
+      authMode: 'userPool',
+    })
+    let todayExpenses
+    try {
+      todayExpenses = await client.graphql({
+        query: queries.getDateExpenses,
+        variables: { id: user.id, deid: today.replace(/-/g, '') },
+      })
+      if (todayExpenses.data.getDateExpenses === null) {
+        return
+      }
+      //todayExpenses?.data?.getDateExpenses?.usedからamount, iid, isincome, labelを取り出してexpensesにセットする
+      const todayData = todayExpenses?.data?.getDateExpenses
+      const used = todayExpenses?.data?.getDateExpenses?.used
+      const newExpenses = used?.map((item) => ({
+        amount: item?.amount ? item.amount : 0,
+        label: item?.label ? item.label : '',
+        isincome: item?.isincome ? item.isincome : false,
+        iid: item?.iid ? item.iid : '',
+      }))
+      setTotals({
+        spending: todayData?.totalspending ? todayData.totalspending : 0,
+        income: todayData?.totalincome ? todayData.totalincome : 0,
+      })
+      setExpenses(newExpenses ? newExpenses : [])
+    } catch (err) {
+      console.log('error get today expenses', err)
+    }
   }
-
-  // 金額とラベルを追加する関数
-  const addExpense = (amount: number, label: string) => {
-    setExpenses([...expenses, { amount, label }])
+  /**
+   * 金額とラベルを追加する関数
+   */
+  const addExpense = (amount: number, label: string, isincome: boolean) => {
+    setExpenses([...expenses, { amount, label, isincome, iid: '' }])
   }
-
+  /**
+   * 収支の変更
+   */
+  const handleIsIncomeChange = (index: number, isincome: boolean) => {
+    const value = !isincome
+    const newExpenses = [...expenses]
+    newExpenses[index].isincome = value
+    setExpenses(newExpenses)
+    calculateTotal()
+  }
+  /**
+   * 金額の変更
+   */
   const handleAmountChange =
     (index: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value
@@ -72,7 +101,144 @@ const AddMoney: React.FC = () => {
       const newExpenses = [...expenses]
       newExpenses[index].amount = parseInt(e.target.value)
       setExpenses(newExpenses)
+      calculateTotal()
     }
+  /**
+   * 合計金額を計算する
+   */
+  const calculateTotal = () => {
+    let totalExpense = 0
+    expenses.forEach((item) => {
+      if (item.isincome) {
+        totalExpense -= item.amount
+      } else {
+        totalExpense += item.amount
+      }
+    })
+    setTotal(totalExpense)
+  }
+  /**
+   * 確定ボタンを押した時の処理
+   */
+  const submit = async () => {
+    const client = generateClient({
+      authMode: 'userPool',
+    })
+    const today = new Date().toISOString().slice(0, 10)
+    let todayExpenses
+    try {
+      todayExpenses = await client.graphql({
+        query: queries.getDateExpenses,
+        variables: { id: user.id, deid: today.replace(/-/g, '') },
+      })
+    } catch (err) {
+      console.log('error get today expenses', err)
+      return
+    }
+    let totalspending = 0
+    let totalincome = 0
+    // expensesからamountが0のものを削除し、iidを追加したものを作成する
+    const newExpenses = expenses.filter((item) => item.amount !== 0)
+    // newExpensesのitemにiidを追加する。iidはyyyymmdd + index
+    newExpenses.forEach((item, index) => {
+      item.isincome
+        ? (totalincome += item.amount)
+        : (totalspending += item.amount)
+      item.iid = `${today.replace(/-/g, '')}${index + 1}`
+    })
+    if (todayExpenses.data.getDateExpenses === null) {
+      try {
+        const input = {
+          id: user.id,
+          deid: today.replace(/-/g, ''),
+          date: today,
+          totalspending,
+          totalincome,
+          used: newExpenses ? newExpenses : [],
+        }
+        await client.graphql({
+          query: mutations.createDateExpenses,
+          variables: { input },
+        })
+      } catch (err) {
+        console.log('error create date expenses', err)
+      }
+    } else {
+      try {
+        const input = {
+          id: user.id,
+          deid: today.replace(/-/g, ''),
+          date: today,
+          totalspending,
+          totalincome,
+          used: newExpenses ? newExpenses : [],
+        }
+        await client.graphql({
+          query: mutations.updateDateExpenses,
+          variables: { input },
+        })
+      } catch (err) {
+        console.log('error update user', err)
+      }
+    }
+    try {
+      const req = {
+        id: user.id,
+        currentmoney: money - total,
+      }
+      await client.graphql({
+        query: mutations.updateUser,
+        variables: { input: req },
+      })
+    } catch (err) {
+      console.log('error update user', err)
+    }
+  }
+
+  /**
+   * 初期化処理
+   */
+  const initialize = async () => {
+    const today = new Date()
+    // リセットまでの日付を計算する
+    const getResetRemaining = () => {
+      if (today.getDate() <= user.edate) {
+        return user.edate - today.getDate()
+      } else {
+        // 今月の最終日を取得
+        const lastDay = new Date(
+          today.getFullYear(),
+          today.getMonth() + 1,
+          0
+        ).getDate()
+        return lastDay + user.edate - today.getDate()
+      }
+    }
+    setResetDateRemaining(getResetRemaining())
+    await getTodayExpenses()
+  }
+
+  useEffect(() => {
+    if (user.id !== '') {
+      initialize()
+    }
+  }, [user])
+
+  useEffect(() => {
+    if (!expenses || expenses.length === 0) {
+      setExpenses([{ amount: 0, label: '', isincome: false, iid: '' }])
+    }
+  }, [expenses])
+
+  useEffect(() => {
+    if (totals.spending > 0 || totals.income > 0) {
+      setMoney(user.currentmoney + totals.spending - totals.income)
+      setTotal(totals.spending - totals.income)
+    } else {
+      setMoney(user.currentmoney)
+      setTotal(user.currentmoney)
+    }
+  }, [totals])
 
   return (
     <div className="add-money">
@@ -82,7 +248,9 @@ const AddMoney: React.FC = () => {
         <h4 className="d-flex justify-content-center mb-3">
           {new Date().toLocaleDateString()}
         </h4>
-        {daysRemained}
+        <h4 className="d-flex justify-content-center mb-3">
+          リセットまであと{resetDateRemaining}日
+        </h4>
 
         <div className="d-flex justify-content-center">
           <h4 className="money-pool">{money}円</h4>→
@@ -92,10 +260,16 @@ const AddMoney: React.FC = () => {
       {/* 入力フォーム（金額） */}
       <div className="content">
         <div className="d-flex flex-column">
+          <div className="d-flex justify-content-center add-money-label">
+            <label className="form-label mr-2">金額</label>
+            <label className="form-label">ラベル</label>
+          </div>
           {expenses.map((item, index) => (
-            <div key={index} className="d-flex justify-content-center">
-              <div className="money d-flex flex-column mr-3">
-                <label className="form-label">金額</label>{' '}
+            <div
+              key={index}
+              className="d-flex justify-content-center align-items-center mb-4"
+            >
+              <div className="money d-flex flex-column mr-2">
                 <input
                   className="form-input"
                   type="number"
@@ -104,8 +278,15 @@ const AddMoney: React.FC = () => {
                 />
               </div>
               <div className="description d-flex flex-column">
-                <label className="form-label">ラベル</label>{' '}
                 <input className="form-input" type="text" />
+              </div>
+              <div className="ml-1">
+                <button
+                  className={`btn btn-${item.isincome ? 'success' : 'secondary'} btn-is-income`}
+                  onClick={() => handleIsIncomeChange(index, item.isincome)}
+                >
+                  {item.isincome ? '収入' : '支出'}
+                </button>
               </div>
             </div>
           ))}
@@ -116,17 +297,18 @@ const AddMoney: React.FC = () => {
         <button
           className="btn btn-success px-5 mr-4"
           onClick={() => {
-            trySignOut()
+            submit()
           }}
         >
           確定
         </button>
         <button
           className="btn btn-primary px-5 "
-          onClick={() => addExpense(0, '')}
+          onClick={() => addExpense(0, '', false)}
         >
           追加
         </button>
+        <button onClick={() => signOuter()}>aaa</button>
       </div>
     </div>
   )

@@ -29,22 +29,28 @@ type MonthExpenses @model @auth(rules: [
   id: ID!
   meid: String
   month: String
-  totalamount: Int
+  totalspending: Int!
+  totalincome: Int!
+}
+
+type Query {
+  getDateExpensesByDeid(id: ID!, deid: String): DateExpenses
 }
 
 type DateExpenses @model @auth(rules: [
   { allow: owner, ownerField: "id" }
 ]) {
-  id: ID!
-  deid: String
-  date: String
-  totalamount: Int
-  used: [UsedItem]
+  id: ID! @primaryKey(sortKeyFields: ["deid"])
+  deid: String!
+  date: String!
+  totalspending: Int!
+  totalincome: Int!
+  used: [UsedItem]!
 }
 
 type UsedItem {
-  id: ID!
-  iid: String
-  amount: Int
+  iid: String!
+  amount: Int!
   label: String
+  isincome: Boolean!
 }

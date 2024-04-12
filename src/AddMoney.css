@@ -2,8 +2,9 @@
 .form-label{
   text-align: center;
 }
-.form-input{
-  width: 161px;
+.form-input,
+.form-label {
+  width: 131px;
 }
 
 .application{
@@ -16,13 +17,16 @@
 }
 .header{
   padding-top: 30px;
-  height: 120px;
+  height: 160px;
 }
 .content{
-  margin-top:140px;
+  margin-top:180px;
   margin-bottom:140px;
 }
 .money-pool{
   width: 180px;
   text-align: center;
+}
+.add-money-label{
+  margin-right: 68px;
 }

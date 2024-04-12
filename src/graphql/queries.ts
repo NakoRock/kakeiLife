@@ -8,6 +8,29 @@ type GeneratedQuery<InputType, OutputType> = string & {
   __generatedQueryOutput: OutputType;
 };
 
+export const getDateExpensesByDeid = /* GraphQL */ `query GetDateExpensesByDeid($id: ID!, $deid: String) {
+  getDateExpensesByDeid(id: $id, deid: $deid) {
+    id
+    deid
+    date
+    totalspending
+    totalincome
+    used {
+      iid
+      amount
+      label
+      isincome
+      __typename
+    }
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetDateExpensesByDeidQueryVariables,
+  APITypes.GetDateExpensesByDeidQuery
+>;
 export const getUser = /* GraphQL */ `query GetUser($id: ID!) {
   getUser(id: $id) {
     id
@@ -87,7 +110,8 @@ export const getMonthExpenses = /* GraphQL */ `query GetMonthExpenses($id: ID!) 
     id
     meid
     month
-    totalamount
+    totalspending
+    totalincome
     createdAt
     updatedAt
     __typename
@@ -107,7 +131,8 @@ export const listMonthExpenses = /* GraphQL */ `query ListMonthExpenses(
       id
       meid
       month
-      totalamount
+      totalspending
+      totalincome
       createdAt
       updatedAt
       __typename
@@ -120,17 +145,18 @@ export const listMonthExpenses = /* GraphQL */ `query ListMonthExpenses(
   APITypes.ListMonthExpensesQueryVariables,
   APITypes.ListMonthExpensesQuery
 >;
-export const getDateExpenses = /* GraphQL */ `query GetDateExpenses($id: ID!) {
-  getDateExpenses(id: $id) {
+export const getDateExpenses = /* GraphQL */ `query GetDateExpenses($id: ID!, $deid: String!) {
+  getDateExpenses(id: $id, deid: $deid) {
     id
     deid
     date
-    totalamount
+    totalspending
+    totalincome
     used {
-      id
       iid
       amount
       label
+      isincome
       __typename
     }
     createdAt
@@ -143,16 +169,27 @@ export const getDateExpenses = /* GraphQL */ `query GetDateExpenses($id: ID!) {
   APITypes.GetDateExpensesQuery
 >;
 export const listDateExpenses = /* GraphQL */ `query ListDateExpenses(
+  $id: ID
+  $deid: ModelStringKeyConditionInput
   $filter: ModelDateExpensesFilterInput
   $limit: Int
   $nextToken: String
+  $sortDirection: ModelSortDirection
 ) {
-  listDateExpenses(filter: $filter, limit: $limit, nextToken: $nextToken) {
+  listDateExpenses(
+    id: $id
+    deid: $deid
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+    sortDirection: $sortDirection
+  ) {
     items {
       id
       deid
       date
-      totalamount
+      totalspending
+      totalincome
       createdAt
       updatedAt
       __typename

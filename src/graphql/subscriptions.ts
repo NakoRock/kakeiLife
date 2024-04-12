@@ -130,7 +130,8 @@ export const onCreateMonthExpenses = /* GraphQL */ `subscription OnCreateMonthEx
     id
     meid
     month
-    totalamount
+    totalspending
+    totalincome
     createdAt
     updatedAt
     __typename
@@ -148,7 +149,8 @@ export const onUpdateMonthExpenses = /* GraphQL */ `subscription OnUpdateMonthEx
     id
     meid
     month
-    totalamount
+    totalspending
+    totalincome
     createdAt
     updatedAt
     __typename
@@ -166,7 +168,8 @@ export const onDeleteMonthExpenses = /* GraphQL */ `subscription OnDeleteMonthEx
     id
     meid
     month
-    totalamount
+    totalspending
+    totalincome
     createdAt
     updatedAt
     __typename
@@ -184,12 +187,13 @@ export const onCreateDateExpenses = /* GraphQL */ `subscription OnCreateDateExpe
     id
     deid
     date
-    totalamount
+    totalspending
+    totalincome
     used {
-      id
       iid
       amount
       label
+      isincome
       __typename
     }
     createdAt
@@ -209,12 +213,13 @@ export const onUpdateDateExpenses = /* GraphQL */ `subscription OnUpdateDateExpe
     id
     deid
     date
-    totalamount
+    totalspending
+    totalincome
     used {
-      id
       iid
       amount
       label
+      isincome
       __typename
     }
     createdAt
@@ -234,12 +239,13 @@ export const onDeleteDateExpenses = /* GraphQL */ `subscription OnDeleteDateExpe
     id
     deid
     date
-    totalamount
+    totalspending
+    totalincome
     used {
-      id
       iid
       amount
       label
+      isincome
       __typename
     }
     createdAt
