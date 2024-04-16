@@ -9,3 +9,4 @@ export const userAtom = atom({
   sdate: 0,
   username: '',
 })
+export const loadAtom = atom(false)

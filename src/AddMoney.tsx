@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAtom } from 'jotai'
 import { userAtom } from './jotai/Atoms'
-import { signOut } from 'aws-amplify/auth'
 import './AddMoney.css'
 import * as queries from './graphql/queries'
 import * as mutations from './graphql/mutations'
@@ -9,10 +9,9 @@ import * as mutations from './graphql/mutations'
 import { generateClient } from 'aws-amplify/api'
 
 const AddMoney: React.FC = () => {
-  const signOuter = async () => {
-    signOut()
-  }
+  const navigate = useNavigate()
   const [user] = useAtom(userAtom)
+
   // 金額とラベルの状態を管理する object型配列のexpencseを定義
   const [expenses, setExpenses] = useState<
     {
@@ -238,12 +237,23 @@ const AddMoney: React.FC = () => {
       setMoney(user.currentmoney)
       setTotal(user.currentmoney)
     }
-  }, [totals])
+  }, [totals, user])
 
   return (
     <div className="add-money">
       {/* 固定ヘッダー */}
       <div className="bg-light fixed-top header">
+        {/* 別のページに遷移するボタン */}
+        <div className="d-flex justify-content-end align-items-top mb-2">
+          <button
+            className="btn btn-outline-secondary mr-1"
+            onClick={() => {
+              navigate('/list-date-ex')
+            }}
+          >
+            使用履歴確認
+          </button>
+        </div>
         {/* 今日の日付を表示する */}
         <h4 className="d-flex justify-content-center mb-3">
           {new Date().toLocaleDateString()}
@@ -256,19 +266,29 @@ const AddMoney: React.FC = () => {
           <h4 className="money-pool">{money}円</h4>→
           <h4 className="money-pool ">{money - total}円</h4>
         </div>
+        <div className="header-label-money d-flex justify-content-center add-money-label w-100">
+          <div className="labels mt-2">
+            <label className="form-label mr-2">金額</label>
+            <label className="form-label">ラベル</label>
+          </div>
+        </div>
       </div>
       {/* 入力フォーム（金額） */}
       <div className="content">
         <div className="d-flex flex-column">
-          <div className="d-flex justify-content-center add-money-label">
-            <label className="form-label mr-2">金額</label>
-            <label className="form-label">ラベル</label>
-          </div>
           {expenses.map((item, index) => (
             <div
               key={index}
               className="d-flex justify-content-center align-items-center mb-4"
             >
+              <div className="mr-1">
+                <button
+                  className={`btn btn-${item.isincome ? 'success' : 'secondary'} btn-is-income`}
+                  onClick={() => handleIsIncomeChange(index, item.isincome)}
+                >
+                  {item.isincome ? '収入' : '支出'}
+                </button>
+              </div>
               <div className="money d-flex flex-column mr-2">
                 <input
                   className="form-input"
@@ -279,14 +299,6 @@ const AddMoney: React.FC = () => {
               </div>
               <div className="description d-flex flex-column">
                 <input className="form-input" type="text" />
-              </div>
-              <div className="ml-1">
-                <button
-                  className={`btn btn-${item.isincome ? 'success' : 'secondary'} btn-is-income`}
-                  onClick={() => handleIsIncomeChange(index, item.isincome)}
-                >
-                  {item.isincome ? '収入' : '支出'}
-                </button>
               </div>
             </div>
           ))}
@@ -308,7 +320,6 @@ const AddMoney: React.FC = () => {
         >
           追加
         </button>
-        <button onClick={() => signOuter()}>aaa</button>
       </div>
     </div>
   )

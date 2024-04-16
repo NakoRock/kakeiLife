@@ -17,10 +17,10 @@
 }
 .header{
   padding-top: 30px;
-  height: 160px;
+  height: 195px;
 }
 .content{
-  margin-top:180px;
+  margin-top:240px;
   margin-bottom:140px;
 }
 .money-pool{
@@ -29,4 +29,11 @@
 }
 .add-money-label{
   margin-right: 68px;
+}
+.header-label-money{
+  z-index: 50;
+  background-color: white;
+}
+.labels{
+  margin-left: 60px;
 }

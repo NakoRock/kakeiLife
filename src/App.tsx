@@ -12,9 +12,11 @@ import 'primereact/resources/themes/lara-light-cyan/theme.css'
 import Application from './Application'
 import Welcome from './Welcome'
 import AddMoney from './AddMoney'
+import ListDateEx from './ListDateEx'
 import './App.css'
 import { useAtom } from 'jotai'
 import { userAtom } from './jotai/Atoms'
+import { loadAtom } from './jotai/Atoms'
 import * as queries from './graphql/queries'
 import { generateClient } from 'aws-amplify/api'
 import { fetchAuthSession } from 'aws-amplify/auth'
@@ -24,10 +26,11 @@ Amplify.configure(config)
 const App = () => {
   const client = generateClient({ authMode: 'userPool' })
   const [, setUser] = useAtom(userAtom)
-
+  const [, setLoad] = useAtom(loadAtom)
   useEffect(() => {
     const initialize = async () => {
       try {
+        setLoad(true)
         const { accessToken } = (await fetchAuthSession()).tokens ?? {}
         const uid = accessToken?.payload?.sub
         if (!uid) throw new Error('ユーザーは認証されていません')
@@ -44,6 +47,7 @@ const App = () => {
           sdate: userData?.data?.getUser?.sdate || 0,
           username: userData?.data?.getUser?.username || '',
         })
+        setLoad(false)
       } catch (err) {
         console.log(err)
         // ここでエラーメッセージをUIに表示するための状態更新を行うか、またはエラー画面にリダイレクトする
@@ -53,14 +57,17 @@ const App = () => {
   }, []) // 必要に応じて依存配列を調整
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Application />} />
-        <Route path="/addmoney" element={<AddMoney />} />
-        <Route path="/welcome" element={<Welcome />} />
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
-    </Router>
+    <div>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Application />} />
+          <Route path="/addmoney" element={<AddMoney />} />
+          <Route path="/list-date-ex" element={<ListDateEx />} />
+          <Route path="/welcome" element={<Welcome />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </Router>
+    </div>
   )
 }
 
