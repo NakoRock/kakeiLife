@@ -1,7 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { signOut } from 'aws-amplify/auth'
 import { useAtom } from 'jotai'
 import { userAtom } from './jotai/Atoms'
+import { loginAtom } from './jotai/Atoms'
 import './ListDateEx.css'
 import * as queries from './graphql/queries'
 import { DataTable } from 'primereact/datatable'
@@ -12,6 +14,7 @@ import { generateClient } from 'aws-amplify/api'
 const ListDateEx: React.FC = () => {
   const navigate = useNavigate()
   const [user] = useAtom(userAtom)
+  const [, setLogin] = useAtom(loginAtom)
   // 金額とラベルの状態を管理する object型配列のexpencseを定義
   const [expenses, setExpenses] = useState<
     {
@@ -64,15 +67,21 @@ const ListDateEx: React.FC = () => {
   }
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDate(e.target.value)
-    getDayExpenses()
   }
-  getDayExpenses()
+  const trySignOut = async () => {
+    await signOut()
+    setLogin(false)
+    navigate('/')
+  }
+  useEffect(() => {
+    getDayExpenses()
+  }, [user, date])
 
   return (
     <div className="list-date-ex">
       <div className="bg-light fixed-top header-list-date">
         {/* 別のページに遷移するボタン */}
-        <div className="d-flex justify-content-start align-items-top mb-4">
+        <div className="d-flex justify-content-between align-items-top mb-4">
           <button
             className="btn btn-outline-secondary ml-1"
             onClick={() => {
@@ -80,6 +89,14 @@ const ListDateEx: React.FC = () => {
             }}
           >
             入力画面に戻る
+          </button>
+          <button
+            className="btn btn-outline-danger mr-1"
+            onClick={() => {
+              trySignOut()
+            }}
+          >
+            ログアウト
           </button>
         </div>
 

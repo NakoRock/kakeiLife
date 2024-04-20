@@ -1,5 +1,6 @@
 import { atom } from 'jotai'
 
+export const loginAtom = atom(false)
 export const userAtom = atom({
   currentmoney: 0,
   edate: 0,

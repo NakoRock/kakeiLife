@@ -7,7 +7,8 @@ import {
 } from 'react-router-dom'
 import { Amplify } from 'aws-amplify' // 修正部分
 import config from './aws-exports'
-import { withAuthenticator } from '@aws-amplify/ui-react'
+import { Authenticator } from '@aws-amplify/ui-react'
+import '@aws-amplify/ui-react/styles.css'
 import 'primereact/resources/themes/lara-light-cyan/theme.css'
 import Application from './Application'
 import Welcome from './Welcome'
@@ -16,16 +17,23 @@ import ListDateEx from './ListDateEx'
 import './App.css'
 import { useAtom } from 'jotai'
 import { userAtom } from './jotai/Atoms'
+import { loginAtom } from './jotai/Atoms'
 import { loadAtom } from './jotai/Atoms'
 import * as queries from './graphql/queries'
 import { generateClient } from 'aws-amplify/api'
 import { fetchAuthSession } from 'aws-amplify/auth'
+import { I18n } from 'aws-amplify/utils'
+import { translations } from '@aws-amplify/ui-react'
+import PrivateRoute from './PrivateRoute'
+I18n.putVocabularies(translations)
+I18n.setLanguage('ja')
 
 Amplify.configure(config)
 
 const App = () => {
   const client = generateClient({ authMode: 'userPool' })
   const [, setUser] = useAtom(userAtom)
+  const [login] = useAtom(loginAtom)
   const [, setLoad] = useAtom(loadAtom)
   useEffect(() => {
     const initialize = async () => {
@@ -53,22 +61,69 @@ const App = () => {
         // ここでエラーメッセージをUIに表示するための状態更新を行うか、またはエラー画面にリダイレクトする
       }
     }
-    initialize()
-  }, []) // 必要に応じて依存配列を調整
+    if (login) initialize()
+  }, [login])
 
+  const components = {
+    Header() {
+      return (
+        <div className="d-flex justify-content-center align-items-center my-4">
+          <img
+            src="cat.png"
+            alt="icon"
+            style={{
+              height: '200px',
+              width: '130px',
+              margin: 'auto',
+            }}
+          />{' '}
+        </div>
+      )
+    },
+  }
   return (
     <div>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Application />} />
-          <Route path="/addmoney" element={<AddMoney />} />
-          <Route path="/list-date-ex" element={<ListDateEx />} />
-          <Route path="/welcome" element={<Welcome />} />
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      </Router>
+      <Authenticator components={components} hideSignUp={true}>
+        <Router>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <PrivateRoute>
+                  <Application />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/addmoney"
+              element={
+                <PrivateRoute>
+                  <AddMoney />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/list-date-ex"
+              element={
+                <PrivateRoute>
+                  <ListDateEx />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/welcome"
+              element={
+                <PrivateRoute>
+                  <Welcome />
+                </PrivateRoute>
+              }
+            />
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        </Router>
+      </Authenticator>
     </div>
   )
 }
 
-export default withAuthenticator(App)
+export default App
