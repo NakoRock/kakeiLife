@@ -4,6 +4,7 @@ import { signOut } from 'aws-amplify/auth'
 import { useAtom } from 'jotai'
 import { userAtom } from './jotai/Atoms'
 import { loginAtom } from './jotai/Atoms'
+import { loadAtom } from './jotai/Atoms'
 import './ListDateEx.css'
 import * as queries from './graphql/queries'
 import { DataTable } from 'primereact/datatable'
@@ -15,6 +16,7 @@ const ListDateEx: React.FC = () => {
   const navigate = useNavigate()
   const [user] = useAtom(userAtom)
   const [, setLogin] = useAtom(loginAtom)
+  const [, setLoad] = useAtom(loadAtom)
   // 金額とラベルの状態を管理する object型配列のexpencseを定義
   const [expenses, setExpenses] = useState<
     {
@@ -31,6 +33,7 @@ const ListDateEx: React.FC = () => {
    * 日の収支を取得する
    */
   const getDayExpenses = async () => {
+    setLoad(true)
     const client = generateClient({
       authMode: 'userPool',
     })
@@ -62,8 +65,10 @@ const ListDateEx: React.FC = () => {
       setTotal(spending - income)
       setExpenses(newExpenses ? newExpenses : [])
     } catch (err) {
+      setLoad(false)
       console.log('error get today expenses', err)
     }
+    setLoad(false)
   }
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDate(e.target.value)

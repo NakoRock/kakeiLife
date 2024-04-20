@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import './Welcome.css'
 import { useAtom } from 'jotai'
 import { userAtom } from './jotai/Atoms'
+import { loadAtom } from './jotai/Atoms'
 import * as mutations from './graphql/mutations'
 
 import { generateClient } from 'aws-amplify/api'
@@ -13,6 +14,7 @@ const Welcome: React.FC = () => {
   const [life, setLife] = useState(0)
   const [dateClose, setDateClose] = useState(0)
   const [user] = useAtom(userAtom)
+  const [, setLoad] = useAtom(loadAtom)
 
   /**
    *  貯金の入力フォーム
@@ -54,6 +56,7 @@ const Welcome: React.FC = () => {
    * 確定ボタン
    */
   const submit = async () => {
+    setLoad(true)
     const client = generateClient({
       authMode: 'userPool',
     })
@@ -71,8 +74,10 @@ const Welcome: React.FC = () => {
         variables: { input: req },
       })
     } catch (err) {
+      setLoad(false)
       console.log('error update user', err)
     }
+    setLoad(false)
     navigate('/addmoney')
   }
 

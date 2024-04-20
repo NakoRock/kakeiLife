@@ -25,6 +25,8 @@ import { fetchAuthSession } from 'aws-amplify/auth'
 import { I18n } from 'aws-amplify/utils'
 import { translations } from '@aws-amplify/ui-react'
 import PrivateRoute from './PrivateRoute'
+import { Oval } from 'react-loader-spinner'
+import { Toaster } from 'react-hot-toast'
 I18n.putVocabularies(translations)
 I18n.setLanguage('ja')
 
@@ -34,7 +36,7 @@ const App = () => {
   const client = generateClient({ authMode: 'userPool' })
   const [, setUser] = useAtom(userAtom)
   const [login] = useAtom(loginAtom)
-  const [, setLoad] = useAtom(loadAtom)
+  const [load, setLoad] = useAtom(loadAtom)
   useEffect(() => {
     const initialize = async () => {
       try {
@@ -57,6 +59,7 @@ const App = () => {
         })
         setLoad(false)
       } catch (err) {
+        setLoad(false)
         console.log(err)
         // ここでエラーメッセージをUIに表示するための状態更新を行うか、またはエラー画面にリダイレクトする
       }
@@ -84,6 +87,18 @@ const App = () => {
   return (
     <div>
       <Authenticator components={components} hideSignUp={true}>
+        <Toaster position="top-center" reverseOrder={false} />
+        <div className="spinner">
+          <Oval
+            visible={load}
+            height="80"
+            width="80"
+            color="#4fa94d"
+            ariaLabel="oval-loading"
+            wrapperStyle={{}}
+            wrapperClass=""
+          />
+        </div>
         <Router>
           <Routes>
             <Route

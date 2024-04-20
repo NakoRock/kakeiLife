@@ -2,15 +2,18 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAtom } from 'jotai'
 import { userAtom } from './jotai/Atoms'
+import { loadAtom } from './jotai/Atoms'
 import './AddMoney.css'
 import * as queries from './graphql/queries'
 import * as mutations from './graphql/mutations'
+import { toast } from 'react-hot-toast'
 
 import { generateClient } from 'aws-amplify/api'
 
 const AddMoney: React.FC = () => {
   const navigate = useNavigate()
   const [user] = useAtom(userAtom)
+  const [, setLoad] = useAtom(loadAtom)
 
   // 金額とラベルの状態を管理する object型配列のexpencseを定義
   const [expenses, setExpenses] = useState<
@@ -37,6 +40,7 @@ const AddMoney: React.FC = () => {
     })
     let todayExpenses
     try {
+      setLoad(true)
       todayExpenses = await client.graphql({
         query: queries.getDateExpenses,
         variables: { id: user.id, deid: today.replace(/-/g, '') },
@@ -58,7 +62,9 @@ const AddMoney: React.FC = () => {
         income: todayData?.totalincome ? todayData.totalincome : 0,
       })
       setExpenses(newExpenses ? newExpenses : [])
+      setLoad(false)
     } catch (err) {
+      setLoad(false)
       console.log('error get today expenses', err)
     }
   }
@@ -103,6 +109,16 @@ const AddMoney: React.FC = () => {
       calculateTotal()
     }
   /**
+   * ラベルの変更
+   */
+  const handleLabelChange =
+    (index: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value
+      const newExpenses = [...expenses]
+      newExpenses[index].label = value
+      setExpenses(newExpenses)
+    }
+  /**
    * 合計金額を計算する
    */
   const calculateTotal = () => {
@@ -120,6 +136,7 @@ const AddMoney: React.FC = () => {
    * 確定ボタンを押した時の処理
    */
   const submit = async () => {
+    setLoad(true)
     const client = generateClient({
       authMode: 'userPool',
     })
@@ -131,6 +148,7 @@ const AddMoney: React.FC = () => {
         variables: { id: user.id, deid: today.replace(/-/g, '') },
       })
     } catch (err) {
+      setLoad(false)
       console.log('error get today expenses', err)
       return
     }
@@ -160,6 +178,7 @@ const AddMoney: React.FC = () => {
           variables: { input },
         })
       } catch (err) {
+        setLoad(false)
         console.log('error create date expenses', err)
       }
     } else {
@@ -177,6 +196,7 @@ const AddMoney: React.FC = () => {
           variables: { input },
         })
       } catch (err) {
+        setLoad(false)
         console.log('error update user', err)
       }
     }
@@ -190,8 +210,11 @@ const AddMoney: React.FC = () => {
         variables: { input: req },
       })
     } catch (err) {
+      setLoad(false)
       console.log('error update user', err)
     }
+    setLoad(false)
+    toast.success('保存しました！')
   }
 
   /**
@@ -298,7 +321,12 @@ const AddMoney: React.FC = () => {
                 />
               </div>
               <div className="description d-flex flex-column">
-                <input className="form-input" type="text" />
+                <input
+                  className="form-input"
+                  type="text"
+                  value={item.label}
+                  onChange={(e) => handleLabelChange(index)(e)}
+                />
               </div>
             </div>
           ))}
