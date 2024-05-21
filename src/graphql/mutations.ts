@@ -130,8 +130,15 @@ export const createMonthExpenses = /* GraphQL */ `mutation CreateMonthExpenses(
     id
     meid
     month
-    totalspending
-    totalincome
+    fixedcosts {
+      iid
+      amount
+      label
+      isincome
+      __typename
+    }
+    isstart
+    isfinish
     createdAt
     updatedAt
     __typename
@@ -149,8 +156,15 @@ export const updateMonthExpenses = /* GraphQL */ `mutation UpdateMonthExpenses(
     id
     meid
     month
-    totalspending
-    totalincome
+    fixedcosts {
+      iid
+      amount
+      label
+      isincome
+      __typename
+    }
+    isstart
+    isfinish
     createdAt
     updatedAt
     __typename
@@ -168,8 +182,15 @@ export const deleteMonthExpenses = /* GraphQL */ `mutation DeleteMonthExpenses(
     id
     meid
     month
-    totalspending
-    totalincome
+    fixedcosts {
+      iid
+      amount
+      label
+      isincome
+      __typename
+    }
+    isstart
+    isfinish
     createdAt
     updatedAt
     __typename

@@ -46,6 +46,7 @@ const ListDateEx: React.FC = () => {
       if (todayExpenses.data.getDateExpenses === null) {
         setExpenses([])
         setTotal(0)
+        setLoad(false)
         return
       }
       const todayData = todayExpenses?.data?.getDateExpenses

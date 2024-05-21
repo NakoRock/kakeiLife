@@ -144,17 +144,24 @@ export type DeleteUserMoneyInput = {
 
 export type CreateMonthExpensesInput = {
   id?: string | null,
-  meid?: string | null,
-  month?: string | null,
-  totalspending: number,
-  totalincome: number,
+  meid: string,
+  month: string,
+  fixedcosts?: Array< UsedItemInput | null > | null,
+  isstart?: boolean | null,
+  isfinish?: boolean | null,
+};
+
+export type UsedItemInput = {
+  iid: string,
+  amount: number,
+  label?: string | null,
+  isincome: boolean,
 };
 
 export type ModelMonthExpensesConditionInput = {
-  meid?: ModelStringInput | null,
   month?: ModelStringInput | null,
-  totalspending?: ModelIntInput | null,
-  totalincome?: ModelIntInput | null,
+  isstart?: ModelBooleanInput | null,
+  isfinish?: ModelBooleanInput | null,
   and?: Array< ModelMonthExpensesConditionInput | null > | null,
   or?: Array< ModelMonthExpensesConditionInput | null > | null,
   not?: ModelMonthExpensesConditionInput | null,
@@ -163,27 +170,45 @@ export type ModelMonthExpensesConditionInput = {
   id?: ModelStringInput | null,
 };
 
+export type ModelBooleanInput = {
+  ne?: boolean | null,
+  eq?: boolean | null,
+  attributeExists?: boolean | null,
+  attributeType?: ModelAttributeTypes | null,
+};
+
 export type MonthExpenses = {
   __typename: "MonthExpenses",
   id: string,
-  meid?: string | null,
-  month?: string | null,
-  totalspending: number,
-  totalincome: number,
+  meid: string,
+  month: string,
+  fixedcosts?:  Array<UsedItem | null > | null,
+  isstart?: boolean | null,
+  isfinish?: boolean | null,
   createdAt: string,
   updatedAt: string,
 };
 
+export type UsedItem = {
+  __typename: "UsedItem",
+  iid: string,
+  amount: number,
+  label?: string | null,
+  isincome: boolean,
+};
+
 export type UpdateMonthExpensesInput = {
   id: string,
-  meid?: string | null,
+  meid: string,
   month?: string | null,
-  totalspending?: number | null,
-  totalincome?: number | null,
+  fixedcosts?: Array< UsedItemInput | null > | null,
+  isstart?: boolean | null,
+  isfinish?: boolean | null,
 };
 
 export type DeleteMonthExpensesInput = {
   id: string,
+  meid: string,
 };
 
 export type CreateDateExpensesInput = {
@@ -193,13 +218,6 @@ export type CreateDateExpensesInput = {
   totalspending: number,
   totalincome: number,
   used: Array< UsedItemInput | null >,
-};
-
-export type UsedItemInput = {
-  iid: string,
-  amount: number,
-  label?: string | null,
-  isincome: boolean,
 };
 
 export type ModelDateExpensesConditionInput = {
@@ -224,14 +242,6 @@ export type DateExpenses = {
   used:  Array<UsedItem | null >,
   createdAt: string,
   updatedAt: string,
-};
-
-export type UsedItem = {
-  __typename: "UsedItem",
-  iid: string,
-  amount: number,
-  label?: string | null,
-  isincome: boolean,
 };
 
 export type UpdateDateExpensesInput = {
@@ -302,25 +312,6 @@ export type ModelUserMoneyConnection = {
   nextToken?: string | null,
 };
 
-export type ModelMonthExpensesFilterInput = {
-  id?: ModelIDInput | null,
-  meid?: ModelStringInput | null,
-  month?: ModelStringInput | null,
-  totalspending?: ModelIntInput | null,
-  totalincome?: ModelIntInput | null,
-  createdAt?: ModelStringInput | null,
-  updatedAt?: ModelStringInput | null,
-  and?: Array< ModelMonthExpensesFilterInput | null > | null,
-  or?: Array< ModelMonthExpensesFilterInput | null > | null,
-  not?: ModelMonthExpensesFilterInput | null,
-};
-
-export type ModelMonthExpensesConnection = {
-  __typename: "ModelMonthExpensesConnection",
-  items:  Array<MonthExpenses | null >,
-  nextToken?: string | null,
-};
-
 export type ModelStringKeyConditionInput = {
   eq?: string | null,
   le?: string | null,
@@ -329,6 +320,31 @@ export type ModelStringKeyConditionInput = {
   gt?: string | null,
   between?: Array< string | null > | null,
   beginsWith?: string | null,
+};
+
+export type ModelMonthExpensesFilterInput = {
+  id?: ModelIDInput | null,
+  meid?: ModelStringInput | null,
+  month?: ModelStringInput | null,
+  isstart?: ModelBooleanInput | null,
+  isfinish?: ModelBooleanInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
+  and?: Array< ModelMonthExpensesFilterInput | null > | null,
+  or?: Array< ModelMonthExpensesFilterInput | null > | null,
+  not?: ModelMonthExpensesFilterInput | null,
+};
+
+export enum ModelSortDirection {
+  ASC = "ASC",
+  DESC = "DESC",
+}
+
+
+export type ModelMonthExpensesConnection = {
+  __typename: "ModelMonthExpensesConnection",
+  items:  Array<MonthExpenses | null >,
+  nextToken?: string | null,
 };
 
 export type ModelDateExpensesFilterInput = {
@@ -343,12 +359,6 @@ export type ModelDateExpensesFilterInput = {
   or?: Array< ModelDateExpensesFilterInput | null > | null,
   not?: ModelDateExpensesFilterInput | null,
 };
-
-export enum ModelSortDirection {
-  ASC = "ASC",
-  DESC = "DESC",
-}
-
 
 export type ModelDateExpensesConnection = {
   __typename: "ModelDateExpensesConnection",
@@ -410,13 +420,18 @@ export type ModelSubscriptionUserMoneyFilterInput = {
 export type ModelSubscriptionMonthExpensesFilterInput = {
   meid?: ModelSubscriptionStringInput | null,
   month?: ModelSubscriptionStringInput | null,
-  totalspending?: ModelSubscriptionIntInput | null,
-  totalincome?: ModelSubscriptionIntInput | null,
+  isstart?: ModelSubscriptionBooleanInput | null,
+  isfinish?: ModelSubscriptionBooleanInput | null,
   createdAt?: ModelSubscriptionStringInput | null,
   updatedAt?: ModelSubscriptionStringInput | null,
   and?: Array< ModelSubscriptionMonthExpensesFilterInput | null > | null,
   or?: Array< ModelSubscriptionMonthExpensesFilterInput | null > | null,
   id?: ModelStringInput | null,
+};
+
+export type ModelSubscriptionBooleanInput = {
+  ne?: boolean | null,
+  eq?: boolean | null,
 };
 
 export type ModelSubscriptionDateExpensesFilterInput = {
@@ -548,10 +563,17 @@ export type CreateMonthExpensesMutation = {
   createMonthExpenses?:  {
     __typename: "MonthExpenses",
     id: string,
-    meid?: string | null,
-    month?: string | null,
-    totalspending: number,
-    totalincome: number,
+    meid: string,
+    month: string,
+    fixedcosts?:  Array< {
+      __typename: "UsedItem",
+      iid: string,
+      amount: number,
+      label?: string | null,
+      isincome: boolean,
+    } | null > | null,
+    isstart?: boolean | null,
+    isfinish?: boolean | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -566,10 +588,17 @@ export type UpdateMonthExpensesMutation = {
   updateMonthExpenses?:  {
     __typename: "MonthExpenses",
     id: string,
-    meid?: string | null,
-    month?: string | null,
-    totalspending: number,
-    totalincome: number,
+    meid: string,
+    month: string,
+    fixedcosts?:  Array< {
+      __typename: "UsedItem",
+      iid: string,
+      amount: number,
+      label?: string | null,
+      isincome: boolean,
+    } | null > | null,
+    isstart?: boolean | null,
+    isfinish?: boolean | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -584,10 +613,17 @@ export type DeleteMonthExpensesMutation = {
   deleteMonthExpenses?:  {
     __typename: "MonthExpenses",
     id: string,
-    meid?: string | null,
-    month?: string | null,
-    totalspending: number,
-    totalincome: number,
+    meid: string,
+    month: string,
+    fixedcosts?:  Array< {
+      __typename: "UsedItem",
+      iid: string,
+      amount: number,
+      label?: string | null,
+      isincome: boolean,
+    } | null > | null,
+    isstart?: boolean | null,
+    isfinish?: boolean | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -775,25 +811,36 @@ export type ListUserMoniesQuery = {
 
 export type GetMonthExpensesQueryVariables = {
   id: string,
+  meid: string,
 };
 
 export type GetMonthExpensesQuery = {
   getMonthExpenses?:  {
     __typename: "MonthExpenses",
     id: string,
-    meid?: string | null,
-    month?: string | null,
-    totalspending: number,
-    totalincome: number,
+    meid: string,
+    month: string,
+    fixedcosts?:  Array< {
+      __typename: "UsedItem",
+      iid: string,
+      amount: number,
+      label?: string | null,
+      isincome: boolean,
+    } | null > | null,
+    isstart?: boolean | null,
+    isfinish?: boolean | null,
     createdAt: string,
     updatedAt: string,
   } | null,
 };
 
 export type ListMonthExpensesQueryVariables = {
+  id?: string | null,
+  meid?: ModelStringKeyConditionInput | null,
   filter?: ModelMonthExpensesFilterInput | null,
   limit?: number | null,
   nextToken?: string | null,
+  sortDirection?: ModelSortDirection | null,
 };
 
 export type ListMonthExpensesQuery = {
@@ -802,10 +849,10 @@ export type ListMonthExpensesQuery = {
     items:  Array< {
       __typename: "MonthExpenses",
       id: string,
-      meid?: string | null,
-      month?: string | null,
-      totalspending: number,
-      totalincome: number,
+      meid: string,
+      month: string,
+      isstart?: boolean | null,
+      isfinish?: boolean | null,
       createdAt: string,
       updatedAt: string,
     } | null >,
@@ -981,10 +1028,17 @@ export type OnCreateMonthExpensesSubscription = {
   onCreateMonthExpenses?:  {
     __typename: "MonthExpenses",
     id: string,
-    meid?: string | null,
-    month?: string | null,
-    totalspending: number,
-    totalincome: number,
+    meid: string,
+    month: string,
+    fixedcosts?:  Array< {
+      __typename: "UsedItem",
+      iid: string,
+      amount: number,
+      label?: string | null,
+      isincome: boolean,
+    } | null > | null,
+    isstart?: boolean | null,
+    isfinish?: boolean | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -999,10 +1053,17 @@ export type OnUpdateMonthExpensesSubscription = {
   onUpdateMonthExpenses?:  {
     __typename: "MonthExpenses",
     id: string,
-    meid?: string | null,
-    month?: string | null,
-    totalspending: number,
-    totalincome: number,
+    meid: string,
+    month: string,
+    fixedcosts?:  Array< {
+      __typename: "UsedItem",
+      iid: string,
+      amount: number,
+      label?: string | null,
+      isincome: boolean,
+    } | null > | null,
+    isstart?: boolean | null,
+    isfinish?: boolean | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -1017,10 +1078,17 @@ export type OnDeleteMonthExpensesSubscription = {
   onDeleteMonthExpenses?:  {
     __typename: "MonthExpenses",
     id: string,
-    meid?: string | null,
-    month?: string | null,
-    totalspending: number,
-    totalincome: number,
+    meid: string,
+    month: string,
+    fixedcosts?:  Array< {
+      __typename: "UsedItem",
+      iid: string,
+      amount: number,
+      label?: string | null,
+      isincome: boolean,
+    } | null > | null,
+    isstart?: boolean | null,
+    isfinish?: boolean | null,
     createdAt: string,
     updatedAt: string,
   } | null,

@@ -13,6 +13,7 @@ import 'primereact/resources/themes/lara-light-cyan/theme.css'
 import Application from './Application'
 import Welcome from './Welcome'
 import AddMoney from './AddMoney'
+import MonthUpdate from './MonthUpdate'
 import ListDateEx from './ListDateEx'
 import './App.css'
 import { useAtom } from 'jotai'
@@ -130,6 +131,14 @@ const App = () => {
               element={
                 <PrivateRoute>
                   <Welcome />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/MonthUpdate"
+              element={
+                <PrivateRoute>
+                  <MonthUpdate />
                 </PrivateRoute>
               }
             />

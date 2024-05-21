@@ -26,11 +26,12 @@ type UserMoney @model @auth(rules: [
 type MonthExpenses @model @auth(rules: [
   { allow: owner, ownerField: "id" }
 ]) {
-  id: ID!
-  meid: String
-  month: String
-  totalspending: Int!
-  totalincome: Int!
+  id: ID! @primaryKey(sortKeyFields: ["meid"])
+  meid: String!
+  month: String!
+  fixedcosts: [UsedItem]
+  isstart: Boolean
+  isfinish: Boolean
 }
 
 type Query {

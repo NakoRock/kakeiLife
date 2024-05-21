@@ -12,7 +12,7 @@ import { generateClient } from 'aws-amplify/api'
 
 const AddMoney: React.FC = () => {
   const navigate = useNavigate()
-  const [user] = useAtom(userAtom)
+  const [user, setUser] = useAtom(userAtom)
   const [, setLoad] = useAtom(loadAtom)
 
   // 金額とラベルの状態を管理する object型配列のexpencseを定義
@@ -29,7 +29,6 @@ const AddMoney: React.FC = () => {
   const [total, setTotal] = useState(0)
   const [resetDateRemaining, setResetDateRemaining] = useState(0)
   const [totals, setTotals] = useState({ spending: 0, income: 0 })
-
   /**
    * 今日の収支を取得する
    */
@@ -46,6 +45,7 @@ const AddMoney: React.FC = () => {
         variables: { id: user.id, deid: today.replace(/-/g, '') },
       })
       if (todayExpenses.data.getDateExpenses === null) {
+        setLoad(false)
         return
       }
       //todayExpenses?.data?.getDateExpenses?.usedからamount, iid, isincome, labelを取り出してexpensesにセットする
@@ -62,11 +62,11 @@ const AddMoney: React.FC = () => {
         income: todayData?.totalincome ? todayData.totalincome : 0,
       })
       setExpenses(newExpenses ? newExpenses : [])
-      setLoad(false)
     } catch (err) {
       setLoad(false)
       console.log('error get today expenses', err)
     }
+    setLoad(false)
   }
   /**
    * 金額とラベルを追加する関数
@@ -205,9 +205,18 @@ const AddMoney: React.FC = () => {
         id: user.id,
         currentmoney: money - total,
       }
-      await client.graphql({
+      const userData = await client.graphql({
         query: mutations.updateUser,
         variables: { input: req },
+      })
+      setUser({
+        currentmoney: userData?.data?.updateUser?.currentmoney || 0,
+        edate: userData?.data?.updateUser?.edate || 0,
+        email: userData?.data?.updateUser?.email || '',
+        id: userData?.data?.updateUser?.id || '',
+        savemoney: userData?.data?.updateUser?.savemoney || 0,
+        sdate: userData?.data?.updateUser?.sdate || 0,
+        username: userData?.data?.updateUser?.username || '',
       })
     } catch (err) {
       setLoad(false)
@@ -244,7 +253,7 @@ const AddMoney: React.FC = () => {
     if (user.id !== '') {
       initialize()
     }
-  }, [user])
+  }, [])
 
   useEffect(() => {
     if (!expenses || expenses.length === 0) {

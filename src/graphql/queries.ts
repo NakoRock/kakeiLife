@@ -105,13 +105,20 @@ export const listUserMonies = /* GraphQL */ `query ListUserMonies(
   APITypes.ListUserMoniesQueryVariables,
   APITypes.ListUserMoniesQuery
 >;
-export const getMonthExpenses = /* GraphQL */ `query GetMonthExpenses($id: ID!) {
-  getMonthExpenses(id: $id) {
+export const getMonthExpenses = /* GraphQL */ `query GetMonthExpenses($id: ID!, $meid: String!) {
+  getMonthExpenses(id: $id, meid: $meid) {
     id
     meid
     month
-    totalspending
-    totalincome
+    fixedcosts {
+      iid
+      amount
+      label
+      isincome
+      __typename
+    }
+    isstart
+    isfinish
     createdAt
     updatedAt
     __typename
@@ -122,17 +129,27 @@ export const getMonthExpenses = /* GraphQL */ `query GetMonthExpenses($id: ID!) 
   APITypes.GetMonthExpensesQuery
 >;
 export const listMonthExpenses = /* GraphQL */ `query ListMonthExpenses(
+  $id: ID
+  $meid: ModelStringKeyConditionInput
   $filter: ModelMonthExpensesFilterInput
   $limit: Int
   $nextToken: String
+  $sortDirection: ModelSortDirection
 ) {
-  listMonthExpenses(filter: $filter, limit: $limit, nextToken: $nextToken) {
+  listMonthExpenses(
+    id: $id
+    meid: $meid
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+    sortDirection: $sortDirection
+  ) {
     items {
       id
       meid
       month
-      totalspending
-      totalincome
+      isstart
+      isfinish
       createdAt
       updatedAt
       __typename

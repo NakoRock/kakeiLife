@@ -130,8 +130,15 @@ export const onCreateMonthExpenses = /* GraphQL */ `subscription OnCreateMonthEx
     id
     meid
     month
-    totalspending
-    totalincome
+    fixedcosts {
+      iid
+      amount
+      label
+      isincome
+      __typename
+    }
+    isstart
+    isfinish
     createdAt
     updatedAt
     __typename
@@ -149,8 +156,15 @@ export const onUpdateMonthExpenses = /* GraphQL */ `subscription OnUpdateMonthEx
     id
     meid
     month
-    totalspending
-    totalincome
+    fixedcosts {
+      iid
+      amount
+      label
+      isincome
+      __typename
+    }
+    isstart
+    isfinish
     createdAt
     updatedAt
     __typename
@@ -168,8 +182,15 @@ export const onDeleteMonthExpenses = /* GraphQL */ `subscription OnDeleteMonthEx
     id
     meid
     month
-    totalspending
-    totalincome
+    fixedcosts {
+      iid
+      amount
+      label
+      isincome
+      __typename
+    }
+    isstart
+    isfinish
     createdAt
     updatedAt
     __typename
